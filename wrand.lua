@@ -1,5 +1,23 @@
 local gen
 
+-- internal:
+local function findHigher(arr, v, lo, hi)
+	local mid, val
+
+	while lo <= hi do
+		mid = math.floor( lo + (hi - lo) / 2 )
+		val = arr[mid]
+
+		if v < val then
+			hi = mid - 1
+		else
+			lo = mid + 1
+		end
+	end
+
+	return lo
+end
+
 function gen()
 	local WeightedRand = {}
 	WeightedRand.NewEnvinroment = gen
@@ -10,12 +28,10 @@ function gen()
 
 	WeightedRand.ENABLE_CACHING = true
 
-	local sortedConvert
-	local sortedCache
+	local convertCache
 
 	local function regenerateCache()
-		sortedConvert = setmetatable({}, {__mode = "k"})
-		sortedCache = setmetatable({}, {__mode = "k"})
+		convertCache = setmetatable({}, {__mode = "k"})
 	end
 
 	regenerateCache()
@@ -25,8 +41,7 @@ function gen()
 		if not tbl then
 			regenerateCache()
 		else
-			sortedConvert[tbl] = nil
-			sortedCache[tbl] = nil
+			convertCache[tbl] = nil
 		end
 	end
 
@@ -40,8 +55,6 @@ function gen()
 
 	--[[
 	WeightedRand.ConvertInput(tbl):
-		**If you override WeightedRand.SortInput, you don't need this function**
-
 		Usage:
 			if your table looks different than the example above,
 			you may override this function instead to accept your own layout
@@ -52,7 +65,7 @@ function gen()
 		Output:
 			1: array: {
 				1.1: an array of keys
-				1.2: an array of sum of weights prior to the i-th key
+				1.2: an array of sums of weights prior to the i-th key
 			}
 			2: number: sum of all weights
 
@@ -63,7 +76,7 @@ function gen()
 	]]
 
 	function WeightedRand.ConvertInput(tbl)
-		local cc = sortedConvert[tbl]
+		local cc = convertCache[tbl]
 
 		if WeightedRand.ENABLE_CACHING and cc then
 			return cc[1], cc[2]
@@ -80,28 +93,10 @@ function gen()
 		end
 
 		if WeightedRand.ENABLE_CACHING then
-			sortedConvert[tbl] = {out, sum}
+			convertCache[tbl] = {out, sum}
 		end
 
 		return out, sum
-	end
-
-	-- internals:
-	local function findHigher(arr, v, lo, hi)
-		local mid, val
-
-		while lo <= hi do
-			mid = math.floor( lo + (hi - lo) / 2 )
-			val = arr[mid]
-
-			if v < val then
-				hi = mid - 1
-			else
-				lo = mid + 1
-			end
-		end
-
-		return lo
 	end
 
 	function WeightedRand.Select(tbl, r)
@@ -131,4 +126,4 @@ function gen()
 	return WeightedRand
 end
 
-return gen()
+return gen

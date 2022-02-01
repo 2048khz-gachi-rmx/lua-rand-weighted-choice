@@ -1,5 +1,5 @@
 -- we'll be overriding the default behaviour, so we need a new envinroment
-local wrand = require("../wrand.lua").NewEnvinroment()
+local wrand = require("../wrand.lua") ()
 
 -- pick random words from a string
 -- note that there are repeated words in this text

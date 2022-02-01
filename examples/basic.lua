@@ -1,4 +1,4 @@
-local wrand = require("../wrand.lua")
+local wrand = require("../wrand.lua") ()
 
 local ExampleTable = {
 	thing = 0.5,
