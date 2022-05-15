@@ -14,6 +14,23 @@ local pt = (gmod and PrintTable) or (is_luvit and p) or function() end
 local function findHigher(arr, v, lo, hi)
 	local mid, val
 
+	while lo <= hi do
+		mid = math.floor( lo + (hi - lo) / 2 )
+		val = arr[mid]
+
+		if v < val then
+			hi = mid - 1
+		else
+			lo = mid + 1
+		end
+	end
+
+	return lo
+end
+
+local function findLower(arr, v, lo, hi)
+	local mid, val
+
 	while hi - lo > 1 do
 		mid = math.floor( lo + (hi - lo) / 2 )
 		val = arr[mid]
@@ -150,7 +167,7 @@ function gen()
 
 		for i=1, amt do
 			local rand = math_Random() * sum
-			local k = findHigher(sumCopy, rand, 0, len)
+			local k = findLower(sumCopy, rand, 0, len)
 
 			local weight = sumCopy[k] - (sumCopy[k - 1] or 0)
 
