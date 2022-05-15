@@ -1,21 +1,31 @@
 local gen
 
+--[[
+local is_luvit = package and
+	(type(package) == "table" and package.loaded) and
+	package.loaded.uv ~= nil and
+	type(p) == "function"
+
+-- printtable
+local pt = (gmod and PrintTable) or (is_luvit and p) or function() end
+]]
+
 -- internal:
 local function findHigher(arr, v, lo, hi)
 	local mid, val
 
-	while lo <= hi do
+	while hi - lo > 1 do
 		mid = math.floor( lo + (hi - lo) / 2 )
 		val = arr[mid]
 
-		if v < val then
-			hi = mid - 1
+		if val >= v then
+			hi = mid
 		else
-			lo = mid + 1
+			lo = mid
 		end
 	end
 
-	return lo
+	return hi
 end
 
 function gen()
@@ -99,25 +109,63 @@ function gen()
 		return out, sum
 	end
 
-	function WeightedRand.Select(tbl, r)
+	local math_Random = math.random
+
+	function WeightedRand.Select(tbl)
 		local data, sum = WeightedRand.ConvertInput(tbl)
 		local keys, sums = data[1], data[2]
 		local len = #sums
 
-		return keys[ findHigher(sums, math.random() * sum, 1, len) ]
+		return keys[ findHigher(sums, math_Random() * sum, 1, len) ]
 	end
 
-	function WeightedRand.SelectTable(tbl, num, into)
+	function WeightedRand.SelectTable(tbl, amt, into)
 		local out = into or {}
 
-		num = num or 1
+		amt = amt or 1
 		local data, sum = WeightedRand.ConvertInput(tbl)
 		local keys, sums = data[1], data[2]
 		local len = #sums
 
-		for i=1, num do
-			local k = findHigher(sums, math.random() * sum, 1, len)
+		for i=1, amt do
+			local k = findHigher(sums, math_Random() * sum, 1, len)
 			out[i] = keys[k]
+		end
+
+		return out
+	end
+
+
+	function WeightedRand.SelectNoRepeat(tbl, amt, into)
+		local data, sum = WeightedRand.ConvertInput(tbl)
+		assert(#data <= amt)
+
+		local keys, sums = data[1], data[2]
+		local len = #sums
+
+		local sumCopy = {}
+		for i=1, len do sumCopy[i] = sums[i] end
+
+		local out = into or {}
+
+		for i=1, amt do
+			local rand = math_Random() * sum
+			local k = findHigher(sumCopy, rand, 0, len)
+
+			local weight = sumCopy[k] - (sumCopy[k - 1] or 0)
+
+			sum = sum - weight
+			out[i] = keys[k]
+
+			-- this will be slow for big tables, need a better algo
+			for i2=k, len do
+				sumCopy[i2] = sumCopy[i2] - weight
+			end
+
+			-- make this entry's sum be equal to the previous one
+			-- the binary search will find the leftmost entry if there are duplicates,
+			-- so this effectively means this entry will be ignored
+			sumCopy[k] = (sumCopy[k - 1] or 0)
 		end
 
 		return out
