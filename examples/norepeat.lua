@@ -1,4 +1,4 @@
-local wrand = require("../wrand.lua")
+local wrand = require("../wrand.lua") ()
 
 local ExampleTable = {
 	thing = 0.5,
@@ -28,8 +28,6 @@ local function validate(i, c)
 	for k,v in pairs(c) do if v > i then print("wrong", k, v, i) return false end end
 	return c.never_pick_me == 0
 end
-
-local b = bench():Open()
 
 for i=1, n do
 	local pick = wrand.SelectNoRepeat(ExampleTable, 3, t)
