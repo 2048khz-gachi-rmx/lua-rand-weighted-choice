@@ -32,6 +32,7 @@ function gen()
 
 	local function regenerateCache()
 		convertCache = setmetatable({}, {__mode = "k"})
+		WeightedRand.CacheTable = convertCache
 	end
 
 	regenerateCache()
